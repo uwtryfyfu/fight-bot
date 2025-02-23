@@ -28,7 +28,6 @@ module.exports = {
             });
         }
 
-        // Max upgrade limits
         const maxStats = { hp: 100, stamina: 100, strength: 100, abilitySlots: 4 };
 
         const createEmbed = () => new EmbedBuilder()
@@ -68,22 +67,19 @@ module.exports = {
                 return i.reply({ embeds: [new EmbedBuilder().setColor("Yellow").setDescription("⚠️ You have no stat points left!")], ephemeral: true });
             }
 
-            const type = i.customId.split("_")[1]; // Extracts "hp", "stamina", "strength", "abilitySlots"
+            const type = i.customId.split("_")[1];
 
             if (player[type] >= maxStats[type]) {
                 return i.reply({ embeds: [new EmbedBuilder().setColor("Red").setDescription(`❌ Your **${type}** is already maxed out!`)], ephemeral: true });
             }
 
-            // Upgrade logic
             const upgradeValues = { hp: 2, stamina: 1, strength: 1, abilitySlots: 1 };
             player[type] += upgradeValues[type];
             player.statPoints -= 1;
             await player.save();
 
-            // Update embed & buttons dynamically
             await interaction.editReply({ embeds: [createEmbed()], components: [createButtons()] });
 
-            // Send success message
             await i.reply({ embeds: [new EmbedBuilder().setColor("Green").setDescription(`✅ Successfully upgraded **${type}**! You have **${player.statPoints}** stat points left.`)], ephemeral: true });
         });
 

@@ -38,7 +38,6 @@ module.exports = {
             )
             .setFooter({ text: "You have 3 minutes to make a purchase!" });
 
-        // Buttons für jede Ability
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`buy_punch_${userId}`)
@@ -60,7 +59,6 @@ module.exports = {
 
         const message = await interaction.reply({ embeds: [shopEmbed], components: [row] });
 
-        // Collector für die Button-Interaktionen (3 Minuten)
         const filter = i => i.user.id === userId && i.customId.includes(`_${userId}`);
         const collector = message.createMessageComponentCollector({ filter, time: 180000 });
 
@@ -72,9 +70,8 @@ module.exports = {
                 });
             }
 
-            const ability = i.customId.split("_")[1]; // "punch", "shield" oder "volleyball"
+            const ability = i.customId.split("_")[1];
 
-            // Überprüfen, ob der Spieler die Ability schon hat
             if (player.unlockedAbilities.includes(ability)) {
                 return i.reply({ 
                     embeds: [new EmbedBuilder().setColor("Yellow").setDescription("⚠️ You have already purchased this ability!")], 
@@ -82,7 +79,6 @@ module.exports = {
                 });
             }
 
-            // Überprüfen, ob genug Coins vorhanden sind
             if (player.wubbies < abilityCosts[ability]) {
                 return i.reply({ 
                     embeds: [new EmbedBuilder().setColor("Yellow").setDescription("⚠️ Not enough Wubbies!")], 
@@ -90,7 +86,6 @@ module.exports = {
                 });
             }
 
-            // Kauf abschließen
             player.wubbies -= abilityCosts[ability];
             player.unlockedAbilities.push(ability);
             await player.save();
@@ -101,7 +96,6 @@ module.exports = {
             });
         });
 
-        // Collector beendet: Buttons deaktivieren
         collector.on("end", async () => {
             const disabledRow = new ActionRowBuilder().addComponents(
                 row.components.map(button => button.setDisabled(true))

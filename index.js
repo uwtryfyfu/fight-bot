@@ -2,7 +2,7 @@ const fs = require("fs");
 const { Routes, GatewayIntentBits, Partials } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 const Discord = require("discord.js");
-const cron = require("node-cron"); // Importiere node-cron
+const cron = require("node-cron");
 const Player = require("./models/fightsystem")
 const config = require("./config.json");
 
@@ -15,7 +15,6 @@ const client = new Discord.Client({
 
 module.exports = client;
 
-// SlashCommands
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./SlashCommands').filter(file => file.endsWith('.js'));
 
@@ -58,8 +57,7 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
-// Mission reset logic
-const { getPlayer } = require("./models/fightsystem"); // Importiere getPlayer
+const { getPlayer } = require("./models/fightsystem"); 
 
 const allMissions = [
     { id: 1, name: "Win 3 fights", goal: 3, rewardType: "Wubbies", rewardAmount: 10 },
@@ -72,11 +70,11 @@ const allMissions = [
 async function resetWeeklyMissions() {
     console.log("[🕒] Resetting Weekly Missions...");
 
-    const players = await Player.find({}); // Alle Spieler abfragen
+    const players = await Player.find({}); 
     
     if (players.length === 0) {
         console.log("No players found to reset missions.");
-        return; // Falls keine Spieler gefunden wurden, brechen wir die Funktion ab.
+        return;
     }
 
     for (const player of players) {
@@ -97,13 +95,11 @@ async function resetWeeklyMissions() {
     console.log("[🕒] Weekly missions have been reset!");
 }
 
-// Jeden Montag um 00:00 Uhr ausführen
 cron.schedule("0 0 * * 1", async () => {
     await resetWeeklyMissions();
     console.log("[🕒] Weekly missions have been reset!");
 });
 
-// events
 fs.readdirSync("./events/").forEach((file) => {
     const events = fs.readdirSync("./events/").filter((file) =>
         file.endsWith(".js")

@@ -13,7 +13,6 @@ const abilities = {
 const cooldowns = new Map();
 const fightHistory = new Map();
 
-// Funktion zur Aktualisierung der Missionen
 async function updateMission(userId, missionId, amount) {
     let player = await Player.findOne({ userId });
 
@@ -22,7 +21,6 @@ async function updateMission(userId, missionId, amount) {
         return;
     }
 
-    // Suche nach der entsprechenden Mission
     const mission = player.weeklyMissions.find(m => m.id === missionId);
 
     if (mission && !mission.completed) {
@@ -35,7 +33,6 @@ async function updateMission(userId, missionId, amount) {
             mission.completed = true;
             console.log(`Mission completed: ${missionId}`);
 
-            // Belohnung basierend auf der Art der Mission
             if (mission.rewardType === "StatPoints") {
                 player.statPoints = Math.max(0, player.statPoints + mission.rewardAmount);
                 console.log(`Awarded StatPoints: ${mission.rewardAmount}`);
@@ -108,7 +105,6 @@ module.exports = {
 
         await interaction.deferReply();
 
-        // **SPANNUNGSAUFBAU MIT ABILITIES**
         await interaction.editReply(`<a:fight:1281654020397858846> **${interaction.user.username} challenges ${defender.username} to a fight!**`);
         await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -132,11 +128,9 @@ module.exports = {
         }
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // **Stat-Power (70%)**
         const attackerStatPower = attackerStats.strength + attackerStats.hp + attackerStats.stamina;
         const defenderStatPower = defenderStats.strength + defenderStats.hp + defenderStats.stamina;
-
-        // **Luck-Faktor (30%)**    
+  
         const maxLuck = 10;
         const attackerLuck = Math.floor(Math.random() * maxLuck) + (Date.now() % 10);
         const defenderLuck = Math.floor(Math.random() * maxLuck) + ((Date.now() + 1) % 10);
@@ -144,12 +138,10 @@ module.exports = {
         const attackerPower = Math.floor(attackerStatPower * 0.7 + attackerLuck * 0.3);
         const defenderPower = Math.floor(defenderStatPower * 0.7 + defenderLuck * 0.3);
 
-        // **Stat-Differenz berechnen**
         const statDifference = Math.abs(attackerStatPower - defenderStatPower);
 
-        // Wubbies und StatPoints basierend auf der Power-Differenz
         let wubbyReward = statDifference > 20 ? 1 : 5;
-        let statPointReward = statDifference > 20 ? 0 : 1; // Keine StatPoints, wenn die Differenz zu hoch ist
+        let statPointReward = statDifference > 20 ? 0 : 1; 
 
         let winner, loser;
 
@@ -157,14 +149,12 @@ module.exports = {
             winner = attacker;
             loser = defenderData;
 
-            // Update Missions
             await updateMission(winner.userId, 1, Math.max(0, wubbyReward));
             await updateMission(winner.userId, 2, Math.max(0, wubbyReward));
         } else if (attackerPower < defenderPower) {
             winner = defenderData;
             loser = attacker;
 
-            // Update Missions
             await updateMission(winner.userId, 1, Math.max(0, wubbyReward));
             await updateMission(winner.userId, 2, Math.max(0, wubbyReward));
         } else {
@@ -178,7 +168,6 @@ module.exports = {
             return interaction.editReply({ embeds: [tieEmbed], content: "# ITS OVER" });
         }
 
-        // Wubbies und StatPoints vergeben
         winner.wubbies = (winner.wubbies || 0) + wubbyReward;
         if (statPointReward > 0) {
             winner.statPoints = (winner.statPoints || 0) + statPointReward;
@@ -196,7 +185,6 @@ module.exports = {
         await interaction.editReply(`<:W_yellow:1322931650149089412> **${winner.userId === attackerId ? interaction.user.username : defender.username} delivers the final hit!**`);
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // **Ergebnis-Embed**
         const fightResultEmbed = new EmbedBuilder()
             .setColor("#005fff")
             .setTitle("<a:pandafire:1338869789375987723> Battle Result <a:pandafire:1338869789375987723>")

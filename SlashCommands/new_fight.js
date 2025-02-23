@@ -2,20 +2,17 @@ const { SlashCommandBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, Embed
 const { getPlayer } = require("../utils/playerUtils");
 const Player = require("../models/fightsystem");
 
-// Emojis
-const EMOJI_PUNCH = "1338939251286605975"; // Nur die Emoji-ID
-const EMOJI_SHIELD = "1338939270601379850"; // Nur die Emoji-ID
-const EMOJI_VOLLEYBALL = "1338939334568575128"; // Nur die Emoji-ID
-const EMOJI_WINNER = "1322931650149089412"; // Nur die Emoji-ID
-const EMOJI_WUBBIES = "1292553623431282764"; // Nur die Emoji-ID
+const EMOJI_PUNCH = "1338939251286605975";
+const EMOJI_SHIELD = "1338939270601379850"; 
+const EMOJI_VOLLEYBALL = "1338939334568575128"; 
+const EMOJI_WINNER = "1322931650149089412"; 
+const EMOJI_WUBBIES = "1292553623431282764";
 
-// Schadensformel
 const calculateDamage = (strength) => {
     const rawDamage = Math.floor(2 + (strength / 10) + (strength * strength) / 500);
-    return Math.min(rawDamage, 30); // Maximal 30 Schaden
+    return Math.min(rawDamage, 30); 
 };
 
-// Funktion zur Aktualisierung der Missionen
 async function updateMission(userId, missionId, amount) {
     let player = await Player.findOne({ userId });
 
@@ -24,7 +21,6 @@ async function updateMission(userId, missionId, amount) {
         return;
     }
 
-    // Suche nach der entsprechenden Mission
     const mission = player.weeklyMissions.find(m => m.id === missionId);
 
     if (mission && !mission.completed) {
@@ -37,7 +33,6 @@ async function updateMission(userId, missionId, amount) {
             mission.completed = true;
             console.log(`Mission completed: ${missionId}`);
 
-            // Belohnung basierend auf der Art der Mission
             if (mission.rewardType === "StatPoints") {
                 player.statPoints = Math.max(0, player.statPoints + mission.rewardAmount);
                 console.log(`Awarded StatPoints: ${mission.rewardAmount}`);
@@ -69,7 +64,6 @@ module.exports = {
             return;
         }
 
-        // Bestätigungsnachricht mit Buttons
         const confirmEmbed = new EmbedBuilder()
             .setColor("#005fff")
             .setDescription(`⚔️ **${defender.username}, do you accept the fight challenge from ${interaction.user.username}?**`);
@@ -92,8 +86,7 @@ module.exports = {
             fetchReply: true
         });
 
-        // Sammle die Antwort des Verteidigers
-        const collector = confirmationMessage.createMessageComponentCollector({ time: 60000 }); // 60 Sekunden Zeit zum Antworten
+        const collector = confirmationMessage.createMessageComponentCollector({ time: 60000 });
 
         collector.on("collect", async i => {
             if (i.user.id !== defender.id) {
@@ -104,7 +97,6 @@ module.exports = {
             if (i.customId === "accept_fight") {
                 await i.update({ content: `🎉 **${defender.username} has accepted the fight!**`, embeds: [], components: [] });
 
-                // Kampf starten
                 const rawAttacker = await getPlayer(attackerId);
                 const rawDefender = await getPlayer(defender.id);
 
@@ -202,7 +194,7 @@ module.exports = {
                     fetchReply: true
                 });
 
-                const fightCollector = fightMessage.createMessageComponentCollector({ time: 300000 }); // 5 Minuten Zeit für den Kampf
+                const fightCollector = fightMessage.createMessageComponentCollector({ time: 300000 }); 
 
                 fightCollector.on("collect", async i => {
                     if (i.user.id !== fightState.turn) {
@@ -250,22 +242,18 @@ module.exports = {
                                 break;
                             }
 
-                            // Basisschaden berechnen
                             damage = calculateDamage(currentPlayer.strength);
 
-                            // 40% Chance für zusätzlichen Schaden
                             if (Math.random() < 0.4) {
-                                damage += 3; // 3 zusätzlicher Schaden
+                                damage += 3;
                                 resultMessage = `**<:Punch:1338939251286605975> ${currentPlayer.username} landed a critical Punch (${damage} DMG, -${staminaCost} STA)!\n${opponent.username} has ❤️ ${opponent.hp} left.**`;
                             } else {
                                 resultMessage = `**<:Punch:1338939251286605975> ${currentPlayer.username} used Punch (${damage} DMG, -${staminaCost} STA)!\n${opponent.username} has ❤️ ${opponent.hp} left.**`;
                             }
 
-                            // Stamina abziehen und Cooldown setzen
                             currentPlayer.stamina -= staminaCost;
                             fightState.cooldowns[currentPlayer.userId].punch = 3;
 
-                            // Schild- und Ausweichlogik
                             if (fightState.shields[opponent.userId]) {
                                 resultMessage = `<:Punch:1338939251286605975> ${currentPlayer.username} used Punch but ${opponent.username}'s shield <:shield:1338939270601379850> blocked the damage!`;
                                 fightState.shields[opponent.userId] = false;
@@ -275,7 +263,7 @@ module.exports = {
                                     resultMessage = `<:Punch:1338939251286605975> ${currentPlayer.username} tried to Punch but ${opponent.username} dodged!`;
                                     fightState.dodgeChance[opponent.userId] = 0;
                                 } else {
-                                    opponent.hp -= damage; // Schaden anwenden
+                                    opponent.hp -= damage;
                                 }
                             }
                             break;
@@ -342,7 +330,6 @@ module.exports = {
 
                         console.log(`Winner after update: ${JSON.stringify(winner)}`);
 
-                        // Fallback-Logik
                         if (statPointsToAdd > 0 && winner.statPoints < maxStatPoints) {
                             winner.statPoints += statPointsToAdd;
                             await winner.save();

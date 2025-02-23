@@ -28,7 +28,6 @@ module.exports = {
             });
         }
 
-        // Sicherstellen, dass equippedAbilities ein Array ist
         if (!Array.isArray(player.equippedAbilities)) {
             player.equippedAbilities = [];
         }
@@ -82,7 +81,6 @@ module.exports = {
             rows.push(currentRow);
         }
 
-        // Fix für den Replace-Button
         if (player.equippedAbilities.length > 0 && player.equippedAbilities.length >= player.abilitySlots) {
             console.log(`User ${userId} can replace abilities. Showing replace menu.`);
             const selectMenu = new StringSelectMenuBuilder()
